@@ -262,18 +262,22 @@ void ExpandShrinkWindow(HWND hWnd)
 	g_nExpandingShrinking = 0;
 }
 
+//#define FIX_FLICKERING
+
 LRESULT OnNcCalcSize(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	NCCALCSIZE_PARAMS* lpncsp = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
 	LRESULT res;
-// 	if (wParam && g_nExpandingShrinking)
-// 	{
-// 		GetWindowRect(g_hwndListRight, lpncsp->rgrc + 2);
-// 		lpncsp->rgrc[0].left = lpncsp->rgrc[2].left - g_nGap;
-// 		lpncsp->rgrc[1] = lpncsp->rgrc[2];
-// 		res = WVR_VALIDRECTS;
-// 	}
-// 	else
+#ifdef FIX_FLICKERING
+	if (wParam && g_nExpandingShrinking && !g_bFixLeftPanel)
+	{
+		res = DefWindowProc(hWnd, WM_NCCALCSIZE, wParam, lParam);
+		GetWindowRect(g_hwndListRight, lpncsp->rgrc + 2);
+		lpncsp->rgrc[1] = lpncsp->rgrc[2];
+		res = WVR_VALIDRECTS;
+	}
+	else
+#endif // FIX_FLICKERING
 	{
 		res = DefWindowProc(hWnd, WM_NCCALCSIZE, wParam, lParam);
 	}
